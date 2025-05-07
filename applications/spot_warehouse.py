@@ -20,6 +20,8 @@ from isaacsim.core.api import World
 from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 from spot_policy import SpotFlatTerrainPolicy
 from isaacsim.storage.native import get_assets_root_path
+from omni.isaac.core.utils.extensions import enable_extension, disable_extension
+enable_extension('isaacsim.ros2.bridge')
 
 
 class SpotRunner(object):
@@ -54,7 +56,7 @@ class SpotRunner(object):
             usd_path=usd_path,
             policy_path=policy_path,
             policy_params_path=policy_params_path,
-            position=np.array([0, 0, 0.7]),
+            position=np.array([1, 0, 0.7]),
         )
 
         self._base_command = np.zeros(3)
@@ -92,7 +94,7 @@ class SpotRunner(object):
         self._input = carb.input.acquire_input_interface()
         self._keyboard = self._appwindow.get_keyboard()
         self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
-        self._world.add_physics_callback("anymal_forward", callback_fn=self.on_physics_step)
+        self._world.add_physics_callback("spot_forward", callback_fn=self.on_physics_step)
 
     def on_physics_step(self, step_size) -> None:
         """
@@ -138,6 +140,8 @@ class SpotRunner(object):
             if event.input.name in self._input_keyboard_mapping:
                 self._base_command -= np.array(self._input_keyboard_mapping[event.input.name])
         return True
+    
+
 
 
 def main():
