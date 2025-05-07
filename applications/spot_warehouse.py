@@ -13,10 +13,12 @@ simulation_app = SimulationApp({"headless": False})
 
 import carb
 import numpy as np
+import os
+from pathlib import Path
 import omni.appwindow  # Contains handle to keyboard
 from isaacsim.core.api import World
 from isaacsim.core.utils.prims import define_prim, get_prim_at_path
-from isaacsim.robot.policy.examples.robots import SpotFlatTerrainPolicy
+from spot_policy import SpotFlatTerrainPolicy
 from isaacsim.storage.native import get_assets_root_path
 
 
@@ -41,9 +43,17 @@ class SpotRunner(object):
         asset_path = assets_root_path + "/Isaac/Environments/Simple_Warehouse/warehouse_multiple_shelves.usd"
         prim.GetReferences().AddReference(asset_path)
 
+        BASE_DIR = Path(__file__).resolve().parent.parent
+        policy_path = os.path.join(BASE_DIR, "policies/spot/models", "spot_arm_policy.pt")
+        policy_params_path = os.path.join(BASE_DIR, "policies/spot/params", "env.yaml")
+        usd_path = os.path.join(BASE_DIR, "assets", "spot_arm.usd")
+
         self._spot  = SpotFlatTerrainPolicy(
             prim_path="/World/Spot",
             name="Spot",
+            usd_path=usd_path,
+            policy_path=policy_path,
+            policy_params_path=policy_params_path,
             position=np.array([0, 0, 0.7]),
         )
 
