@@ -20,9 +20,13 @@ from isaacsim.core.api import World
 from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 from spot_policy import SpotFlatTerrainPolicy
 from isaacsim.storage.native import get_assets_root_path
+from isaacsim.sensors.camera import Camera
+
 from omni.isaac.core.utils.extensions import enable_extension, disable_extension
 enable_extension('isaacsim.ros2.bridge')
 
+from isaacsim.sensors.camera import Camera
+import cv2
 
 class SpotRunner(object):
     def __init__(self, physics_dt, render_dt) -> None:
@@ -85,6 +89,15 @@ class SpotRunner(object):
         self.needs_reset = False
         self.first_step = True
 
+        # Assuming this camera already exists in the USD stage
+        existing_camera_path = "/World/Spot/body/frontleft_fisheye"
+
+        self.camera = Camera(prim_path=existing_camera_path, resolution=(640, 480))
+        self.camera.initialize()
+
+        # Get actual resolution from the camera
+        self.width, self.height = self.camera.get_resolution()
+
     def setup(self) -> None:
         """
         Set up keyboard listener and add physics callback
@@ -114,14 +127,28 @@ class SpotRunner(object):
     def run(self) -> None:
         """
         Step simulation based on rendering downtime
-
         """
-        # change to sim running
         while simulation_app.is_running():
             self._world.step(render=True)
+
+            rgb = self.camera.get_rgb()
+            
+            #check if rgb is empty
+            if rgb is None or len(rgb) == 0:
+                continue  # Skip until image is ready
+
+            # Convert RGB → BGR for OpenCV display
+            bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+
+            # Show the image
+            cv2.imwrite("test.png", bgr)
+
             if self._world.is_stopped():
                 self.needs_reset = True
+
+        cv2.destroyAllWindows()
         return
+
 
     def _sub_keyboard_event(self, event, *args, **kwargs) -> bool:
         """
