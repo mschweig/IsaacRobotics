@@ -10,18 +10,10 @@ import cv2
 
 from isaacsim.core.api import World
 from isaacsim.core.utils.prims import define_prim
-from spot_policy import SpotFlatTerrainPolicy
+from spot_policy import SpotFlatTerrainPolicy, SpotArmFlatTerrainPolicy
 from isaacsim.storage.native import get_assets_root_path
-from isaacsim.sensors.camera import Camera
-
 from omni.isaac.core.utils.extensions import enable_extension
-#enable_extension('isaacsim.ros2.bridge')
-
-# ROS 2 & sensor_msgs
-import rclpy
-from rclpy.node import Node
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
+enable_extension('isaacsim.ros2.bridge')
 
 
 class SpotRunner(object):
@@ -38,11 +30,11 @@ class SpotRunner(object):
         prim.GetReferences().AddReference(asset_path)
 
         BASE_DIR = Path(__file__).resolve().parent.parent
-        policy_path = os.path.join(BASE_DIR, "policies/spot/models", "spot_policy.pt")
-        policy_params_path = os.path.join(BASE_DIR, "policies/spot/params", "env.yaml")
-        usd_path = os.path.join(BASE_DIR, "assets", "spot.usd")
+        policy_path = os.path.join(BASE_DIR, "policies/spot_arm/models", "spot_arm_policy.pt")
+        policy_params_path = os.path.join(BASE_DIR, "policies/spot_arm/params", "env.yaml")
+        usd_path = os.path.join(BASE_DIR, "assets", "spot_arm.usd")
 
-        self._spot = SpotFlatTerrainPolicy(
+        self._spot = SpotArmFlatTerrainPolicy(
             prim_path="/World/Spot",
             name="Spot",
             usd_path=usd_path,
@@ -64,21 +56,6 @@ class SpotRunner(object):
         self.needs_reset = False
         self.first_step = True
 
-        # Initialize both cameras
-        self.frontleft_camera = Camera(prim_path="/World/Spot/body/frontleft_fisheye", resolution=(640, 480))
-        self.frontright_camera = Camera(prim_path="/World/Spot/body/frontright_fisheye", resolution=(640, 480))
-        self.frontleft_camera.initialize()
-        self.frontright_camera.initialize()
-        self.width, self.height = self.frontleft_camera.get_resolution()
-
-        # ROS 2 setup
-        rclpy.init()
-        self.ros_node = rclpy.create_node("spot_camera_publisher")
-        self.cv_bridge = CvBridge()
-
-        self.frontleft_pub = self.ros_node.create_publisher(Image, "/scar/camera/frontleft/image", 10)
-        self.frontright_pub = self.ros_node.create_publisher(Image, "/scar/camera/frontright/image", 10)
-
     def setup(self) -> None:
         self._appwindow = omni.appwindow.get_default_app_window()
         self._input = carb.input.acquire_input_interface()
@@ -99,35 +76,11 @@ class SpotRunner(object):
         else:
             self._spot.forward(step_size, self._base_command)
 
-    def publish_camera(self, camera: Camera, publisher, frame_id: str):
-        rgb = camera.get_rgb()
-        if rgb is None or len(rgb) == 0:
-            return
-
-        rgb_np = np.array(rgb).reshape(self.height, self.width, 3)
-        if rgb_np.dtype == np.float32:
-            rgb_np = (rgb_np * 255).astype(np.uint8)
-
-        bgr = cv2.cvtColor(rgb_np, cv2.COLOR_RGB2BGR)
-        msg = self.cv_bridge.cv2_to_imgmsg(bgr, encoding="bgr8")
-        msg.header.stamp = self.ros_node.get_clock().now().to_msg()
-        msg.header.frame_id = frame_id
-        publisher.publish(msg)
-
     def run(self) -> None:
         while simulation_app.is_running():
             self._world.step(render=True)
-
-            self.publish_camera(self.frontleft_camera, self.frontleft_pub, "frontleft_camera")
-            self.publish_camera(self.frontright_camera, self.frontright_pub, "frontright_camera")
-
-            rclpy.spin_once(self.ros_node, timeout_sec=0.0)
-
             if self._world.is_stopped():
                 self.needs_reset = True
-
-        self.ros_node.destroy_node()
-        rclpy.shutdown()
         return
 
     def _sub_keyboard_event(self, event, *args, **kwargs) -> bool:
