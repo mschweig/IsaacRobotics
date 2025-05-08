@@ -23,6 +23,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 
+
 class SpotRunner(object):
     def __init__(self, physics_dt, render_dt) -> None:
         self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt, rendering_dt=render_dt)
@@ -37,9 +38,9 @@ class SpotRunner(object):
         prim.GetReferences().AddReference(asset_path)
 
         BASE_DIR = Path(__file__).resolve().parent.parent
-        policy_path = os.path.join(BASE_DIR, "policies/spot/models", "spot_arm_policy.pt")
+        policy_path = os.path.join(BASE_DIR, "policies/spot/models", "spot_policy.pt")
         policy_params_path = os.path.join(BASE_DIR, "policies/spot/params", "env.yaml")
-        usd_path = os.path.join(BASE_DIR, "assets", "spot_arm.usd")
+        usd_path = os.path.join(BASE_DIR, "assets", "spot.usd")
 
         self._spot = SpotFlatTerrainPolicy(
             prim_path="/World/Spot",
@@ -63,17 +64,20 @@ class SpotRunner(object):
         self.needs_reset = False
         self.first_step = True
 
-        # Camera setup
-        existing_camera_path = "/World/Spot/body/frontleft_fisheye"
-        self.camera = Camera(prim_path=existing_camera_path, resolution=(640, 480))
-        self.camera.initialize()
-        self.width, self.height = self.camera.get_resolution()
+        # Initialize both cameras
+        self.frontleft_camera = Camera(prim_path="/World/Spot/body/frontleft_fisheye", resolution=(640, 480))
+        self.frontright_camera = Camera(prim_path="/World/Spot/body/frontright_fisheye", resolution=(640, 480))
+        self.frontleft_camera.initialize()
+        self.frontright_camera.initialize()
+        self.width, self.height = self.frontleft_camera.get_resolution()
 
         # ROS 2 setup
         rclpy.init()
         self.ros_node = rclpy.create_node("spot_camera_publisher")
-        self.image_pub = self.ros_node.create_publisher(Image, "/scar/camera/frontleft/image", 10)
         self.cv_bridge = CvBridge()
+
+        self.frontleft_pub = self.ros_node.create_publisher(Image, "/scar/camera/frontleft/image", 10)
+        self.frontright_pub = self.ros_node.create_publisher(Image, "/scar/camera/frontright/image", 10)
 
     def setup(self) -> None:
         self._appwindow = omni.appwindow.get_default_app_window()
@@ -95,24 +99,27 @@ class SpotRunner(object):
         else:
             self._spot.forward(step_size, self._base_command)
 
+    def publish_camera(self, camera: Camera, publisher, frame_id: str):
+        rgb = camera.get_rgb()
+        if rgb is None or len(rgb) == 0:
+            return
+
+        rgb_np = np.array(rgb).reshape(self.height, self.width, 3)
+        if rgb_np.dtype == np.float32:
+            rgb_np = (rgb_np * 255).astype(np.uint8)
+
+        bgr = cv2.cvtColor(rgb_np, cv2.COLOR_RGB2BGR)
+        msg = self.cv_bridge.cv2_to_imgmsg(bgr, encoding="bgr8")
+        msg.header.stamp = self.ros_node.get_clock().now().to_msg()
+        msg.header.frame_id = frame_id
+        publisher.publish(msg)
+
     def run(self) -> None:
         while simulation_app.is_running():
             self._world.step(render=True)
 
-            rgb = self.camera.get_rgb()
-            if rgb is None or len(rgb) == 0:
-                continue
-
-            rgb_np = np.array(rgb).reshape(self.height, self.width, 3)
-            if rgb_np.dtype == np.float32:
-                rgb_np = (rgb_np * 255).astype(np.uint8)
-
-            bgr = cv2.cvtColor(rgb_np, cv2.COLOR_RGB2BGR)
-
-            msg = self.cv_bridge.cv2_to_imgmsg(bgr, encoding="bgr8")
-            msg.header.stamp = self.ros_node.get_clock().now().to_msg()
-            msg.header.frame_id = "frontleft_camera"
-            self.image_pub.publish(msg)
+            self.publish_camera(self.frontleft_camera, self.frontleft_pub, "frontleft_camera")
+            self.publish_camera(self.frontright_camera, self.frontright_pub, "frontright_camera")
 
             rclpy.spin_once(self.ros_node, timeout_sec=0.0)
 
