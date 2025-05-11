@@ -40,7 +40,7 @@ class SpotRunner(object):
             usd_path=usd_path,
             policy_path=policy_path,
             policy_params_path=policy_params_path,
-            position=np.array([1, 0, 0.7]),
+            position=np.array([1, 0, 0.8]),
         )
 
         self._base_command = np.zeros(3)
