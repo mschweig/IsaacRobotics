@@ -42,7 +42,6 @@ The system leverages the power of Isaac Sim physics simulation and bridges it wi
 
 ```bash
 git clone https://github.com/mschweig/IsaacRobotics.git
-cd IsaacRobotics
 ```
 
 2. Install Isaac Sim and required extensions (refer to Isaac Sim documentation).
