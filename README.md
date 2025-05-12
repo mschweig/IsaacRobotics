@@ -56,8 +56,8 @@ cd IsaacRobotics
 ### Run Spot Arm in Warehouse Scenario
 
 ```bash
-cd applications
-python spot_warehouse.py
+cd /workspaces/IsaacSim
+./python.sh /workspaces/IsaacRobotics/applications/spot_warehouse.py
 ```
 
 Control the robot via keyboard:
