@@ -1,4 +1,4 @@
-# isaacrobotics
+# IsaacRobotics based on NVIDIA IsaacSim and IsaacLab
 
 [![License](https://img.shields.io/github/license/mschweig/IsaacRobotics)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/mschweig/IsaacRobotics)](https://github.com/mschweig/IsaacRobotics/stargazers)
@@ -11,7 +11,7 @@
 
 ## Overview
 
-`isaacrobotics` is a modular simulation framework for controlling Boston Dynamics Spot and Spot Arm robots using reinforcement learning (RL) policies in NVIDIA Isaac Sim. This project provides example applications, pre-trained policies, and environment configurations for research and prototyping of autonomous quadruped and manipulator behaviors in complex environments such as warehouses.
+This project provides example applications, pre-trained policies, and environment configurations for research and prototyping of autonomous quadruped and manipulator behaviors in complex environments such as warehouses.
 
 The system leverages the power of Isaac Sim physics simulation and bridges it with ROS 2 for real-time testing and robotic development workflows.
 
@@ -20,9 +20,8 @@ The system leverages the power of Isaac Sim physics simulation and bridges it wi
 ## Features
 
 * ✅ Isaac Sim simulation environments for Spot and Spot Arm
-* ✅ RL policy controllers for locomotion and manipulation tasks
+* ✅ RL policy controllers for locomotion
 * ✅ Example applications including warehouse navigation
-* ✅ Integration of physics-based contact sensors and realistic terrains
 * ✅ ROS 2 bridge support for interfacing with external systems
 * ✅ Modular and extensible structure for adding new robot models and policies
 
@@ -112,9 +111,9 @@ You can adapt these for your custom simulation experiments.
 
 ## Media
 
-### Example: Spot Arm navigating Warehouse in Isaac Sim
+### Example: Spot Arm Policy
 
-![Spot Arm Simulation](https://github.com/mschweig/IsaacRobotics/assets/example_simulation.gif)
+![Spot Arm Simulation](assets/example_simulation.gif)
 
 ---
 
