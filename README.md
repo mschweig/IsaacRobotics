@@ -61,10 +61,10 @@ mschweig-isaacrobotics/
 
 ## Requirements
 
-* NVIDIA Isaac Sim 2024.1 or newer
-* Python 3.8+
-* ROS 2 Humble (optional, for ROS 2 bridge)
-* GPU: NVIDIA RTX 30xx or better (for real-time RL inference)
+* NVIDIA Isaac Sim
+* ROS 2 Humble
+* rmw_zenoh
+* GPU: NVIDIA RTX 40xx or better
 
 ---
 
