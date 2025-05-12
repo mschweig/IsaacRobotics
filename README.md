@@ -1,11 +1,11 @@
-# IsaacRobotics based on NVIDIA IsaacSim and IsaacLab
+# IsaacRobotics Applications
 
 [![License](https://img.shields.io/github/license/mschweig/IsaacRobotics)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/mschweig/IsaacRobotics)](https://github.com/mschweig/IsaacRobotics/stargazers)
 [![Issues](https://img.shields.io/github/issues/mschweig/IsaacRobotics)](https://github.com/mschweig/IsaacRobotics/issues)
 [![Last Commit](https://img.shields.io/github/last-commit/mschweig/IsaacRobotics)](https://github.com/mschweig/IsaacRobotics/commits/main)
 
-**Reinforcement Learning-Controlled Robotics Simulation for Spot and Spot Arm in NVIDIA Isaac Sim**
+**Reinforcement Learning-Controlled Robotics Simulation for Spot and Spot Arm based on NVIDIA Isaac Sim and Isaac Lab**
 
 ---
 
