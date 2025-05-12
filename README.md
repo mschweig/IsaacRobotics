@@ -27,37 +27,6 @@ The system leverages the power of Isaac Sim physics simulation and bridges it wi
 
 ---
 
-## Directory Structure
-
-```bash
-mschweig-isaacrobotics/
-├── README.md
-├── LICENSE
-├── applications/
-│   ├── spot_policy.py
-│   └── spot_warehouse.py
-├── assets/
-│   ├── materials/
-│   └── .thumbs/
-│       └── 256x256/
-└── policies/
-    ├── spot/
-    │   ├── models/
-    │   │   └── spot_policy.pt
-    │   └── params/
-    │       └── env.yaml
-    └── spot_arm/
-        ├── models/
-        │   └── spot_arm_policy.pt
-        └── params/
-            ├── agent.pkl
-            ├── agent.yaml
-            ├── env.pkl
-            └── env.yaml
-```
-
----
-
 ## Requirements
 
 * NVIDIA Isaac Sim
@@ -111,7 +80,7 @@ You can adapt these for your custom simulation experiments.
 
 ## Media
 
-### Example: Spot Arm Policy
+### Spot Arm Policy
 
 ![Spot Arm Simulation](assets/example_simulation.gif)
 
